@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h1 id='h1'>Hello</h1>
+  <!-- <p id="demo">123</p> -->
+  <input type="checkbox" name="" id="checkbox">
+  <p>Đèn: <span id='ketqua'></span></p>
+  <ul class="list">
+    
+  </ul>
+</body>
+<script>
+  
+  var url = window.location.host;
+  // console.log(url);
+  var ws = new WebSocket('ws://'+url+'/ws');
+  const checkboxxx = document.getElementById('checkbox');
+  const h1 = document.getElementById('h1');
+  const ketqua = document.getElementById('ketqua');
+  //datetime & hour
+  
+  
+  // datetime
+ let trangthaibatden = '';
+
+  checkboxxx.onchange = function() {
+    var btn_status = 'OFF';
+    if(checkboxxx.checked) {
+      btn_status = 'ON';
+      ws.send(btn_status); 
+    } else {
+        ws.send(btn_status); 
+    }
+     
+   
+    console.log(trangthaibatden);
+  }
+
+
+  ws.onopen = function(){
+    console.log('hello');
+  }
+
+  
+  let txtResultSensor = '';
+  let resultSensor = '';
+  let ldr, pir = '';
+  
+  
+  ws.onmessage = function(evt) {
+    // h1.innerHTML = evt.data;
+    txtResultSensor = evt.data;
+    //datetime
+    var today = new Date();
+    var date =today.getDate() + '-'+(today.getMonth()+1)+'-' + today.getFullYear() + '-' + today.getHours() + 'h:' + today.getMinutes() + 'p:' + today.getSeconds() +'s' ;
+    trangthaibatden = date;
+    // in date time và giá trị sensor
+    resultSensor = txtResultSensor.split(" ");
+    ldr = parseInt(resultSensor[0]);
+    pir = parseInt(resultSensor[1]);
+    ketqua.innerHTML = date + "\t giá trị cảm biến LDR "+ ldr + " --- PIR MOTION " + pir;
+    if( ldr <= 50 && !(pir == 0) && today.getHours() > 17) {
+      checkboxxx.disabled = false;
+    } else if(ldr <= 50 && !(pir == 0) && today.getHours() < 17){
+      checkboxxx.disabled = true;
+    } 
+  }
+
+
+</script>
+
+</html>
