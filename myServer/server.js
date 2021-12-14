@@ -12,6 +12,8 @@ var http = require('http');
 
 // fs
 var fs = require('fs');
+// time
+// var my_time = require('moment');
 
 // kết nối mysql
 var con = mysql.createConnection({
@@ -29,7 +31,7 @@ con.connect(function(err) {
     
 
     // lấy full data từ database 
-    sql = "SELECT * FROM cambien";
+    sql = "SELECT * FROM cambien2";
     con.query(sql, function(err,result, fields) {
         if (err) throw err;
         // console.log(result[1].noidung);
@@ -78,8 +80,8 @@ var valueESPString = '';
 // Giá trị cảm biến ánh sáng & giá trị cảm biến chuyển động
 var sensorValue = [0, 0]; // sensorValue[0] cảm biến ánh sáng & sensorValue[1] cảm biến chuyển động
 
-var today = new Date();
-var date =today.getDate() + '-'+(today.getMonth()+1)+'-' + today.getFullYear() + '-' + today.getHours() + 'h:' + today.getMinutes() + 'p:' + today.getSeconds() +'s' ;
+// var today = new Date();
+// var date =today.getDate() + '-'+(today.getMonth()+1)+'-' + today.getFullYear() + '-' + today.getHours() + 'h:' + today.getMinutes() + 'p:' + today.getSeconds() +'s' ;
 
 //broadcast: gửi dữ liệu từ server tới tất cả client
 // ws.on('connection', function(socket, req) {
@@ -121,20 +123,32 @@ var date =today.getDate() + '-'+(today.getMonth()+1)+'-' + today.getFullYear() +
 // });
 
 
-ws.on('connection', function(socket){
+ws.on('connection', function(socket){ socket // là trình duyệt hoặc esp
     socket.on('message', function message(data,isBinary) {
         // console.log(data.toString());
-        if(data.toString() == 'ON' || data.toString() == 'OFF') {
+        if(data.toString() == 'ON' || data.toString() == 'OFF') { // Khi ấn nút sẽ nhận data gửi về từ trình duyệt về server
+
             // ESP = data.toString();
-            console.log(data.toString());
-            valueESPString = data.toString();
-            console.log(valueESPString);
-            ESP = date + " giá trị cảm biến: " + data.toString();
-            con.query("INSERT INTO cambien (noidung) VALUES (?)", ESP, ()=> {});
+            // var today = new Date();
+            // var date =today.getDate() + '-'+(today.getMonth()+1)+'-' + today.getFullYear() + '-' + today.getHours() + 'h:' + today.getMinutes() + 'p:' + today.getSeconds() +'s' ;
+            // console.log(data.toString());
+            // valueESPString = data.toString();
+            // console.log(valueESPString);
+            // ESP = date + ": " + data.toString();
+            // var value = [ESP, data.toString()];
+            // // con.query("INSERT INTO cambien (noidung) VALUES (?)", ESP, ()=> {});
+            // con.query("INSERT INTO cambien (noidung, trangthai) VALUES (?)", [value], ()=> {});
+
+            var myTime = require('moment')().format('YYYY-MM-DD HH:mm:ss');
+            ESP = data.toString();
+            var value = [myTime, ESP]
+            // console.log(value);
+            // // var sql = "INSERT INTO cambien2 (thoigian, trangthai) VALUES (?, ?)"
+            con.query("INSERT INTO cambien2 (thoigian, trangthai) VALUES (?)", [value], ()=> {});
         }
+        // Gửi dữ liệu từ client này sang client khác
         ws.clients.forEach(function each(client){
             if(client !== ws && client.readyState === WebSocket.OPEN) {
-                // console.log(data.toString());
                 client.send(data.toString(), {binary: isBinary})
             }
         });

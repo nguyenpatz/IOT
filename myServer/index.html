@@ -5,15 +5,18 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <script
+src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+</script>
 </head>
 <body>
   <h1 id='h1'>Hello</h1>
   <!-- <p id="demo">123</p> -->
   <input type="checkbox" name="" id="checkbox">
   <p>Đèn: <span id='ketqua'></span></p>
-  <ul class="list">
-    
-  </ul>
+  <div>
+    <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
+  </div>
 </body>
 <script>
   
@@ -29,18 +32,18 @@
   // datetime
  let trangthaibatden = '';
 
-  checkboxxx.onchange = function() {
-    var btn_status = 'OFF';
-    if(checkboxxx.checked) {
-      btn_status = 'ON';
-      ws.send(btn_status); 
-    } else {
-        ws.send(btn_status); 
-    }
+  // checkboxxx.onchange = function() {
+  //   var btn_status = 'OFF';
+  //   if(checkboxxx.checked) {
+  //     btn_status = 'ON';
+  //     ws.send(btn_status); 
+  //   } else {
+  //       ws.send(btn_status); 
+  //   }
      
    
-    console.log(trangthaibatden);
-  }
+  //   console.log(trangthaibatden);
+  // }
 
 
   ws.onopen = function(){
@@ -50,12 +53,16 @@
   
   let txtResultSensor = '';
   let resultSensor = '';
-  let ldr, pir = '';
+  let ldr, pir,ldr2, pir2 = '';
   
-  
+  var xValues = ['ldr','pir']; // giá trị của pir
+  var yValues = []; // giá trị của ldr
+  var barColors = ["red", "green"];
+
   ws.onmessage = function(evt) {
-    // h1.innerHTML = evt.data;
+
     txtResultSensor = evt.data;
+
     //datetime
     var today = new Date();
     var date =today.getDate() + '-'+(today.getMonth()+1)+'-' + today.getFullYear() + '-' + today.getHours() + 'h:' + today.getMinutes() + 'p:' + today.getSeconds() +'s' ;
@@ -64,13 +71,138 @@
     resultSensor = txtResultSensor.split(" ");
     ldr = parseInt(resultSensor[0]);
     pir = parseInt(resultSensor[1]);
-    ketqua.innerHTML = date + "\t giá trị cảm biến LDR "+ ldr + " --- PIR MOTION " + pir;
-    if( ldr <= 50 && !(pir == 0) && today.getHours() > 17) {
-      checkboxxx.disabled = false;
-    } else if(ldr <= 50 && !(pir == 0) && today.getHours() < 17){
+
+    
+    checkboxxx.onchange = function() {
+    var btn_status = 'OFF';
+    if(checkboxxx.checked) {
+      btn_status = 'ON';
+      ldr2 = ldr;
+      pir2 = pir;
+      yValues[0] = (ldr2);
+      yValues[1] = (pir2);
+      myChartIOT();
+      ws.send(btn_status); 
+    } else {
+        ws.send(btn_status); 
+        ldr2 = ldr;
+        pir2 = pir;
+        yValues[0] = (ldr2);
+        yValues[1] = (pir2);
+        myChartIOT();
+    }
+     
+   
+    console.log(trangthaibatden);
+  }
+
+   ketqua.innerHTML = date + "\t giá trị cảm biến LDR "+ ldr + " --- PIR MOTION " + pir; 
+    
+    onOff1();
+    
+  }
+
+  // Hàm vô hiệu hóa nút checkbox thứ 1
+
+  function onOff1() {
+
+    if( ldr <= 50 && !(pir == 0) ) {
+
+      checkboxxx.disabled = false; 
+
+    } else if(ldr <= 50 && pir == 0){
+
       checkboxxx.disabled = true;
+
+    } else if (ldr > 50 && pir == 0) {
+
+      checkboxxx.disabled = true;
+    } else if (ldr > 50 && !(pir == 0)) {
+
+      checkboxxx.disabled = true;
+
+    }
+
+  }
+
+  // Hàm vô hiệu hóa nút checkbox thứ 2
+
+  function onOff2(){
+
+      if(ldr <= 50) {
+
+      if(pir == 0) {
+
+        checkboxxx.disabled = true; 
+
+      } else {
+
+        checkboxxx.disabled = false; 
+
+      }
+
+    }
+
+    if (ldr > 50 ) {
+
+      checkboxxx.disabled = true; 
+
+      if(pir == 0) {
+
+        checkboxxx.disabled = true; 
+
+      }
+
+      else {
+
+        checkboxxx.disabled = true; 
+
+      }
     } 
   }
+
+
+  function myChartIOT() {
+  new Chart("myChart", {
+  type: "bar",
+  data: {
+    labels: xValues,
+    datasets: [{
+      backgroundColor: barColors,
+      data: yValues
+    }]
+  },
+  options: {
+    legend: {display: false},
+    title: {
+      display: true,
+      text: "Giá trị cảm biến"
+    }
+  }
+});
+}
+
+function myChartIOT2() {
+  new Chart("myChart", {
+  type: "line",
+  data: {
+    labels: xValues,
+    datasets: [{
+      fill: false,
+      lineTension: 0,
+      backgroundColor: "rgba(0,0,255,1.0)",
+      borderColor: "rgba(0,0,255,0.1)",
+      data: yValues
+    }]
+  },
+  options: {
+    legend: {display: false},
+    scales: {
+      yAxes: [{ticks: {min: 6, max:16}}],
+    }
+  }
+});
+}
 
 
 </script>

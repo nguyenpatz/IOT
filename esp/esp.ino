@@ -238,13 +238,15 @@ const char* password = "playbasketball"; //Đổi pass luôn
 const char* ip_host = "192.168.1.251"; //Đổi luôn IP host của PC nha
 const uint16_t port = 8000; //Port thích đổi thì phải đổi ở server nữa
 const int LED = 2;
-const int BTN = 0;
+//const int BTN = 0;
 byte wireArray[4];
 char myBuffer [33];
 int val1;
 int val2;
 String val;
 
+
+//Hàm lấy dữ liệu
 void getData(){
   byte index = 0;
   Wire.requestFrom(8, 6);
@@ -271,14 +273,14 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 //      Serial.printf("[WSc] get text: %s\n", payload);
       if (strcmp((char*)payload, "ON") == 0) {
         Serial.println((char*)payload);
-        Wire.beginTransmission(8); /* begin with device address 8 */
-        Wire.write(1);  /* sends hello string */
-        Wire.endTransmission();    /* stop transmitting */
+        Wire.beginTransmission(8); /* bắt đầu bằng địa chỉ thiết bị 8 */
+        Wire.write(1);  /* gửi giá trị 1 */
+        Wire.endTransmission();    /* ngừng truyền */
         // Khi client phát sự kiện "ON" thì server sẽ bật LED
       } else if (strcmp((char*)payload, "OFF") == 0) {
         Serial.println((char*)payload);
-        Wire.beginTransmission(8); /* begin with device address 8 */
-        Wire.write(0);  /* sends hello string */
+        Wire.beginTransmission(8); /* bắt đầu bằng địa chỉ thiết bị 8 */
+        Wire.write(0);  /* gửi giá trị 0 */
         Wire.endTransmission();    /* stop transmitting */
         // Khi client phát sự kiện "ON" thì server sẽ bật LED
       }
@@ -295,17 +297,17 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 }
 void setup() {
   pinMode(LED, OUTPUT);
-  pinMode(BTN, INPUT);
+  //pinMode(BTN, INPUT);
   Serial.begin(115200);
   Wire.begin(D1, D2);
   Serial.println("ESP8266 Websocket Client");
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid, password); // kết nối wifi 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  webSocket.begin(ip_host, port);
-  webSocket.onEvent(webSocketEvent);
+  webSocket.begin(ip_host, port); //kích hoạt địa chỉ ip và port để có thể truy cập vào
+  webSocket.onEvent(webSocketEvent); // Nhận sự kiện 
 }
 void loop() {
   webSocket.loop();
@@ -315,7 +317,7 @@ void loop() {
   val = itoa(val1,myBuffer,10);
   val +=" ";
   val += itoa(val2,myBuffer,10);
-  Serial.println(val);
+//  Serial.println(val);
 //  Gửi dữ liệu
   webSocket.sendTXT(val);
 }
